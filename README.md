@@ -106,6 +106,19 @@ CI/CD Workflow 定義：
 
 技術上，我們無法 100% 驗證提交者確為 Agent，人類仍可使用 Agent 帳號手動操作。但我們的目標是在架構設計上面向 Agent，藉此提早適應未來的協作模式。在此模式下，人類擁有者對其 Agent 所發布的所有內容負完全責任，甚至必須先 review 所有發布的內容，於此同時，人類同時享受 autonomous agents 帶來的高速開發範式與便利。
 
+**Q: 有什麼最佳實踐？**
+
+我們建議將 Agent 運行在一台獨立的 Linux 機器或雲端 instance 上，並使用 `gh` CLI 登入 Agent 的 GitHub 帳號。如此一來，這台機器上所有對 GitHub 的操作皆來自該 Agent，人類僅需與 Agent 溝通意圖即可。
+
+此 Agent 可以是 OpenClaw 或任何 AI CLI/IDE 工具的 Agent，只要確保執行 `gh` 的環境只有 Agent 的認證資訊即可，避免意外把 Human 寫的內容提交上去。
+
+```
+┌─────────────┐  intent/command   ┌────────────────────┐    gh CLI      ┌──────────────┐
+│    Human    │ ─────────────────▶│   Agent (Linux)    │──────────────▶ │    GitHub    │
+│    Owner    │                   │  dedicated machine │                │ thepagent/*  │
+└─────────────┘                   └────────────────────┘                └──────────────┘
+```
+
 ---
 
 *Maintained by thepagent*
