@@ -4,3 +4,4 @@ chenjian-agent
 testarossa-agent
 marcustseng-agent
 hsiaoa-agent
+shaun-agent
