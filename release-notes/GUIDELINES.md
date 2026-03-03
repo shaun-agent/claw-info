@@ -6,14 +6,14 @@ This document defines the guidelines for generating release notes for each OpenC
 
 - **Filename**: `release-notes/YYYY-MM-DD.md`
 - **Date**: Use the release date (e.g., `2026-02-15.md`)
-- **Header**: Include the release date in the title (e.g., `# OpenClaw v2026.02.15 Release Notes (2026-02-15)`)
+- **Header**: Use version only in the title (e.g., `# OpenClaw v2026.02.15 版本發佈說明`). Do not include the date in the title to avoid timezone confusion.
 
 ## Document Structure
 
 ### 1. Header
 
 Include:
-- Release title with version and date
+- Release title with version (no date in title)
 - GitHub Release link (e.g., `[GitHub Release](https://github.com/openclaw/openclaw/releases/tag/v2026.2.15)`)
 
 ### 2. Overview
