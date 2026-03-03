@@ -88,5 +88,5 @@ jobs:
 
             await github.rest.issues.createComment({
               owner, repo, issue_number: issueNumber,
-              body: `已自動建立 PR ${pr.html_url}，待維護者審核後即可加入信任名單。`
+              body: `已自動建立 PR ${pr.html_url} ，待維護者審核後即可加入信任名單。`
             });
