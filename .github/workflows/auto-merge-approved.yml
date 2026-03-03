@@ -114,8 +114,18 @@ jobs:
               return;
             }
 
+            // Author check: must have author-verified label (set by check-commit-author workflow)
+            // invalid-author label blocks merge regardless of approval
+            if (labels.includes('invalid-author')) {
+              core.info(`PR #${prNumber} has invalid-author label; skip.`);
+              return;
+            }
+            if (!labels.includes('author-verified')) {
+              core.info(`PR #${prNumber} missing author-verified label; skip.`);
+              return;
+            }
+
             const requiredChecks = [
-              'check-author', // Check Commit Author
               'check',        // Block Forbidden Files
             ];
 
