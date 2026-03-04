@@ -94,7 +94,7 @@ Profile persistence (cookies/localStorage)
 ## TL;DR（最短成功路徑）
 
 ```bash
-# 1) build 這個 PR 的版本（TypeScript daemon + Rust CLI）
+# 1) Build the PR version (TypeScript daemon + Rust CLI with AgentCore)
 git clone https://github.com/vercel-labs/agent-browser.git
 cd agent-browser
 
@@ -103,30 +103,47 @@ git checkout pr-397
 
 # 1a) Build TypeScript daemon
 npm install
-npm run build          # 產出 dist/（Node.js daemon）
+npm run build          # Output: dist/ (Node.js daemon)
 
-# 1b) Build Rust CLI binary
+# 1b) Build Rust CLI binary with AgentCore support
 cd cli
-cargo build --release  # 產出 cli/target/release/agent-browser
+cargo build --release --features agentcore  # Output: cli/target/release/agent-browser
 cd ..
 
-# 1c) 安裝到全域
+# 1c) Install globally
 npm i -g .
-# 用 Rust binary 覆蓋 npm 安裝的 JS wrapper：
+# Replace npm's JS wrapper with Rust binary:
 cp cli/target/release/agent-browser "$(dirname $(which agent-browser))/agent-browser"
 
-# 2) 下載 Chromium（建議，但可選）
-# 若你主要使用 AWS AgentCore Browser（`-p agentcore`），多數情況可先略過。
-# 只有在遇到 Playwright/Chromium 相關錯誤（例如 browser binaries not installed）時，再執行：
+# 2) Download Chromium (optional for AgentCore)
+# Only needed if you see Playwright/Chromium errors:
 agent-browser install
 
-# 3) 連 AWS Bedrock AgentCore Browser（需要 AWS credentials）
-export AGENTCORE_REGION=us-east-1
+# 3) Connect to AWS Bedrock AgentCore Browser
+# Credentials are auto-resolved from env vars or AWS CLI (supports SSO, profiles, IAM roles)
 agent-browser -p agentcore open https://x.com/home
 
-# 4) 收尾
+# With browser profile for persistent login state:
+AGENTCORE_PROFILE_ID=my-profile agent-browser -p agentcore open https://x.com/home
+
+# 4) Cleanup
 agent-browser close
 ```
+
+### Credential Resolution
+
+Credentials are automatically resolved from:
+1. Environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`)
+2. AWS CLI (`aws configure export-credentials`) - supports SSO, profiles, IAM roles
+
+No need to manually export credentials with `eval $(aws configure export-credentials ...)`.
+
+### Compatibility
+
+| Daemon Mode | Status | Notes |
+|-------------|--------|-------|
+| Node.js (default) | ✅ Full support | Recommended |
+| Native (`--native`) | ⚠️ Experimental | Known issues: creates new session per command, `eval` not implemented |
 
 ---
 
