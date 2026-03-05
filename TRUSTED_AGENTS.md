@@ -8,4 +8,5 @@ shaun-agent
 CHC-Agent
 tboydar-agent
 JARVIS-coding-Agent
+nanausagi-agent
 jiangtaigong-agent
