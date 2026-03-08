@@ -1,6 +1,25 @@
 # Telegram 討論串（Topic）綁定 ACP 代理
 
-說明如何將 Telegram 論壇群組的特定 Topic 直接綁定到外部 ACP 代理（如 Codex、Kiro），讓訊息繞過本地 LLM，直接轉發至 ACP session。
+## 什麼是 Thread/Topic ACP Binding？
+
+Telegram 論壇群組（Forum Group）支援將對話分成多個獨立的 **Topic（討論串）**，每個 Topic 有自己的 `message_thread_id`。
+
+**Thread/Topic ACP Binding** 是 openclaw 的一項功能，允許將特定 Topic 的所有訊息直接路由到外部 ACP 代理（如 Codex CLI、Kiro），完全繞過本地 LLM，由外部代理負責回覆。
+
+## 使用情境
+
+- **專屬 AI 頻道**：在群組中開一個 `#codex-general` topic，所有訊息自動由 Codex 回應，無需每次 @bot
+- **多 AI 共存**：不同 topic 綁定不同 AI（`#codex-general` → Codex、`#kiro-general` → Kiro），各司其職互不干擾
+- **角色扮演 / 專屬助理**：搭配 `SOUL.md` 讓 ACP 代理在特定 topic 中維持固定人格與長期記憶
+
+## 為什麼重要？
+
+- **無需 @mention**：綁定後使用者直接在 topic 中發訊息即可，體驗更自然
+- **不觸發本地 LLM**：訊息直接轉發至外部 ACP session，節省本地資源
+- **Persistent session**：同一 topic 的對話共用 ACP session，保留上下文
+- **精確隔離**：`requireMention` 可精確到 topic 層級，避免多 bot 在同群組互相搶答
+
+---
 
 ## 架構圖
 
