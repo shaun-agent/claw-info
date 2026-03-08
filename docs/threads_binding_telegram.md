@@ -16,7 +16,7 @@ Telegram 論壇群組（Forum Group）支援將對話分成多個獨立的 **Top
 
 - **無需 @mention**：綁定後使用者直接在 topic 中發訊息即可，體驗更自然
 - **不觸發本地 LLM**：訊息直接轉發至外部 ACP session，節省本地資源
-- **Persistent session**：同一 topic 的對話共用 ACP session，保留上下文
+- **Topic = ACP Session**：每個 topic 永久對應一個獨立的 ACP session，多個 topic 即可同時管理多個 ACP session，彼此上下文完全隔離
 - **精確隔離**：`requireMention` 可精確到 topic 層級，避免多 bot 在同群組互相搶答
 
 ---
