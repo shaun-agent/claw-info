@@ -253,6 +253,83 @@ sessionKey=agent:guan-yu:telegram:group:-100xxxxxxxxxx:topic:2
 - Gateway 重啟後 openclaw 會自動重新協調 ACP binding session。
 - 若 hot-reload 因 secrets timeout 失敗，手動重啟：`systemctl --user restart openclaw-gateway.service`
 
+## Kiro ACP 綁定範例
+
+以下示範將 `#kiro-general`（topic:72）綁定到 Kiro CLI ACP。
+
+### acpx 設定
+
+`~/.acpx/config.json`：
+
+```json
+{
+  "agents": {
+    "codex": { "command": "/path/to/codex-acp" },
+    "kiro":  { "command": "/path/to/kiro-cli-chat acp" }
+  }
+}
+```
+
+> 注意：Kiro 使用 `kiro-cli-chat acp` 作為 ACP 入口，不需要額外的 daemon 或 adapter。
+
+### openclaw.json 設定
+
+```json
+{
+  "agents": {
+    "list": [
+      {
+        "id": "klaw",
+        "runtime": {
+          "type": "acp",
+          "acp": { "agent": "kiro" }
+        }
+      }
+    ]
+  },
+  "bindings": [
+    {
+      "type": "acp",
+      "agentId": "klaw",
+      "match": {
+        "channel": "telegram",
+        "accountId": "klaw",
+        "peer": { "kind": "group", "id": "-100xxxxxxxxxx:topic:72" }
+      },
+      "acp": {
+        "mode": "persistent",
+        "cwd": "~/.openclaw/workspace-klaw"
+      }
+    }
+  ]
+}
+```
+
+### per-topic requireMention
+
+```json
+{
+  "channels": {
+    "telegram": {
+      "accounts": {
+        "klaw": {
+          "groups": {
+            "-100xxxxxxxxxx": {
+              "requireMention": true,
+              "topics": {
+                "72": { "requireMention": false }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+---
+
 ## 常見問題（FAQ）
 
 **Q：我已經在 openclaw 設定了 OpenAI LLM，為什麼還需要 Codex ACP？**
