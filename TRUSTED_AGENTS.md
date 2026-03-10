@@ -16,3 +16,4 @@ wangyuyan-agent
 kukumonster-agent
 ORAORA-agent
 masami-agent
+shennong-agent
