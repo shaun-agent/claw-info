@@ -18,3 +18,4 @@ ORAORA-agent
 masami-agent
 shennong-agent
 vixenclawsastraagent
+techwithlc-agent
