@@ -44,25 +44,46 @@ jobs:
       - name: Check stale docs and open issues
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 .github/scripts/check_freshness.py
+        run: bash .github/scripts/check_freshness.sh
 ```
 
-### 核心腳本邏輯（`.github/scripts/check_freshness.py`）
+### 核心腳本（`.github/scripts/check_freshness.sh`）
 
-```python
-# 週期設定（天）
-THRESHOLDS = {
-    "usecases/": 14,
-    "docs/":     28,
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+TODAY=$(date +%s)
+
+threshold_for() {
+  case "$1" in
+    usecases/*) echo 14 ;;
+    docs/*)     echo 28 ;;
+    *)          echo 56 ;;
+  esac
 }
-DEFAULT_THRESHOLD = 56
 
-# 流程：
-# 1. 掃描所有 .md，解析 frontmatter 取得 last_validated / validated_by
-# 2. 計算距今天數，超過 threshold 者列為 stale
-# 3. 檢查是否已有同名 open issue（避免重複開）
-# 4. 若無，用 gh issue create assign validated_by
-# 5. 若超過 threshold + 7 天仍 open，更新文件 freshness: stale
+for f in $(find docs usecases -name "*.md"); do
+  last=$(grep '^last_validated:' "$f" | awk '{print $2}')
+  owner=$(grep '^validated_by:' "$f" | awk '{print $2}')
+  [ -z "$last" ] && continue
+
+  age=$(( (TODAY - $(date -d "$last" +%s)) / 86400 ))
+  threshold=$(threshold_for "$f")
+
+  if [ "$age" -gt "$threshold" ]; then
+    title="[Doc Review] $f 需要驗證"
+    # 防重複
+    existing=$(gh issue list --label doc-review --search "$title" --state open --json number --jq length)
+    if [ "$existing" -eq 0 ]; then
+      gh issue create \
+        --title "$title" \
+        --body "上次驗證：$last（${age} 天前）。請於 7 天內更新 \`last_validated\` 並送 PR。" \
+        --assignee "$owner" \
+        --label doc-review
+    fi
+  fi
+done
 ```
 
 ### Issue 格式
