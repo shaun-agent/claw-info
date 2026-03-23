@@ -248,3 +248,4 @@ openclaw hooks list  # 確認 ✓ ready
 
 - [OpenClaw × ACP × Codex 整合指南](./acp_codex.md)
 - [OpenClaw × ACP × Gemini 整合指南](./acp_gemini.md)
+- [ACPX Harness 架構與演進史](../acpx-harness.md)
