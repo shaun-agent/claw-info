@@ -201,19 +201,19 @@ openclaw sandbox recreate --all
 
 ### 🔴 高影響 — 功能性災難
 
-| Issue | 標題 | 說明 | 影響 |
-|-------|------|------|------|
-| [#18748](https://github.com/openclaw/openclaw/issues/18748) | Elevated exec 在 cron 和 sessions_send 中失效 | sandbox 模式下，cron job 和跨 agent 訊息觸發的 exec(elevated=true) 全部失敗，即使 config 正確設定 `tools.elevated.enabled: true` 也沒用 | ⚠️ 多 agent + sandbox + cron 組合完全無法使用 elevated exec（如 gog、remindctl、memo 等工具） |
-| [#4171](https://github.com/openclaw/openclaw/issues/4171) | Cron isolated agent 沒傳 sandboxInfo 給 system prompt | agent 收到主機路徑而非容器路徑 `/workspace`，導致路徑錯誤、幻覺檔案 | ⚠️ cron job 的 agent 使用錯誤路徑，可能創建/讀取錯誤檔案 |
-| [#2432](https://github.com/openclaw/openclaw/issues/2432) | Read tool 不尊重 Docker bind mounts | 設了 `docker.binds` 但 agent 讀不到掛載的路徑 | ⚠️ 無法讀取 bind-mount 的資料夾內容 |
-| [#4368](https://github.com/openclaw/openclaw/issues/4368) | DEFAULT_SANDBOX_WORKSPACE_ROOT 忽略 MOLTBOT_STATE_DIR | 硬編碼 `~/.clawdbot/sandboxes`，不管你怎麼設環境變數 | ⚠️ 環境變數配置無效，路徑混亂 |
+| Issue | 標題 | 說明 | 影響 | 狀態 |
+|-------|------|------|------|------|
+| [#18748](https://github.com/openclaw/openclaw/issues/18748) | Elevated exec 在 cron 和 sessions_send 中失效 | sandbox 模式下，cron job 和跨 agent 訊息觸發的 exec(elevated=true) 全部失敗，即使 config 正確設定 `tools.elevated.enabled: true` 也沒用 | ⚠️ 多 agent + sandbox + cron 組合完全無法使用 elevated exec（如 gog、remindctl、memo 等工具） | 🔒 CLOSED (stale) |
+| [#4171](https://github.com/openclaw/openclaw/issues/4171) | Cron isolated agent 沒傳 sandboxInfo 給 system prompt | agent 收到主機路徑而非容器路徑 `/workspace`，導致路徑錯誤、幻覺檔案 | ⚠️ cron job 的 agent 使用錯誤路徑，可能創建/讀取錯誤檔案 | 🔒 CLOSED (stale) |
+| [#2432](https://github.com/openclaw/openclaw/issues/2432) | Read tool 不尊重 Docker bind mounts | 設了 `docker.binds` 但 agent 讀不到掛載的路徑 | ⚠️ 無法讀取 bind-mount 的資料夾內容 | 🔒 CLOSED (stale) |
+| [#4368](https://github.com/openclaw/openclaw/issues/4368) | DEFAULT_SANDBOX_WORKSPACE_ROOT 忽略 MOLTBOT_STATE_DIR | 硬編碼 `~/.clawdbot/sandboxes`，不管你怎麼設環境變數 | ⚠️ 環境變數配置無效，路徑混亂 | 🔒 CLOSED |
 
 ### 🟡 中影響 — 安全性問題
 
-| Issue | 標題 | 說明 |
-|-------|------|------|
-| [#18766](https://github.com/openclaw/openclaw/issues/18766) | SKILL.md runtime 指令不受路徑限制 | install-time 有限制，但 runtime 階段 SKILL.md 可以指示 agent 讀寫任意路徑 |
-| [#18739](https://github.com/openclaw/openclaw/issues/18739) | Windows 上 exec tool 因 `detached: true` 導致 stdout 全空 | Windows 上所有 exec 指令回傳 `(no output)` |
+| Issue | 標題 | 說明 | 狀態 |
+|-------|------|------|------|
+| [#18766](https://github.com/openclaw/openclaw/issues/18766) | SKILL.md runtime 指令不受路徑限制 | install-time 有限制，但 runtime 階段 SKILL.md 可以指示 agent 讀寫任意路徑 | 🔒 CLOSED (stale) |
+| [#18739](https://github.com/openclaw/openclaw/issues/18739) | Windows 上 exec tool 因 `detached: true` 導致 stdout 全空 | Windows 上所有 exec 指令回傳 `(no output)` | 🔒 CLOSED |
 
 ### 📊 影響評估
 
@@ -229,9 +229,9 @@ openclaw sandbox recreate --all
 
 | Issue | 狀態 | 說明 |
 |-------|------|------|
-| [#4689](https://github.com/openclaw/openclaw/issues/4689) | 關閉 | sandbox.mode=off 時 exec 仍預設進 sandbox |
-| [#4807](https://github.com/openclaw/openclaw/issues/4807) | `not_planned`（已關閉） | sandbox-setup.sh 未包含在 npm 包中 |
-| [#5255](https://github.com/openclaw/openclaw/issues/5255) | 關閉 | browser file upload API 缺少路徑驗證 |
+| [#4689](https://github.com/openclaw/openclaw/issues/4689) | 🔒 CLOSED (stale) | sandbox.mode=off 時 exec 仍預設進 sandbox |
+| [#4807](https://github.com/openclaw/openclaw/issues/4807) | 🔒 CLOSED (stale) | sandbox-setup.sh 未包含在 npm 包中 |
+| [#5255](https://github.com/openclaw/openclaw/issues/5255) | 🔒 CLOSED (stale) | browser file upload API 缺少路徑驗證 |
 
 ### 🔧 Workarounds
 
@@ -283,26 +283,26 @@ read: /workspace/data/input.txt
 
 ### 🔴 Critical
 
-| Issue | 標題 | 說明 |
-|-------|------|------|
-| [#8566](https://github.com/openclaw/openclaw/issues/8566) | Sandbox browser runs Chromium as root with --no-sandbox | CVSS 9.6 - Chromium 以 root 執行且停用 sandbox |
+| Issue | 標題 | 說明 | 狀態 |
+|-------|------|------|------|
+| [#8566](https://github.com/openclaw/openclaw/issues/8566) | Sandbox browser runs Chromium as root with --no-sandbox | CVSS 9.6 - Chromium 以 root 執行且停用 sandbox | 🔒 CLOSED (stale) |
 
 ### 🟠 Bugs
 
-| Issue | 標題 | 說明 |
-|-------|------|------|
-| [#9348](https://github.com/openclaw/openclaw/issues/9348) | write tool restriction inconsistent with exec tool | write 和 exec 路徑限制不一致 |
-| [#13276](https://github.com/openclaw/openclaw/issues/13276) | slugifySessionKey truncates phone numbers | 容器名稱截斷電話號碼 |
-| [#16382](https://github.com/openclaw/openclaw/issues/16382) | Discord attachments impossible from sandboxed agents | Sandbox 內無法發送 Discord 附件 |
+| Issue | 標題 | 說明 | 狀態 |
+|-------|------|------|------|
+| [#9348](https://github.com/openclaw/openclaw/issues/9348) | write tool restriction inconsistent with exec tool | write 和 exec 路徑限制不一致 | 🔒 CLOSED (stale) |
+| [#13276](https://github.com/openclaw/openclaw/issues/13276) | slugifySessionKey truncates phone numbers | 容器名稱截斷電話號碼 | 🔒 CLOSED (stale) |
+| [#16382](https://github.com/openclaw/openclaw/issues/16382) | Discord attachments impossible from sandboxed agents | Sandbox 內無法發送 Discord 附件 | 🔒 CLOSED |
 
 ### 🟢 Feature Requests
 
-| Issue | 標題 | 說明 |
-|-------|------|------|
-| [#7722](https://github.com/openclaw/openclaw/issues/7722) | Filesystem Sandboxing Config (tools.fileAccess) | 請求 allowedPaths/denyPaths 設定 |
-| [#7827](https://github.com/openclaw/openclaw/issues/7827) | Default Safety Posture: Sandbox & Session Isolation | 請求預設啟用 sandbox |
-| [#12405](https://github.com/openclaw/openclaw/issues/12405) | Pluggable sandbox backends & per-agent exec routing | 支援 VM/OrbStack 等非 Docker 後端 |
-| [#13543](https://github.com/openclaw/openclaw/issues/13543) | Tool-level sandbox mode for selective isolation | 請求 per-tool sandbox 設定 |
+| Issue | 標題 | 說明 | 狀態 |
+|-------|------|------|------|
+| [#7722](https://github.com/openclaw/openclaw/issues/7722) | Filesystem Sandboxing Config (tools.fileAccess) | 請求 allowedPaths/denyPaths 設定 | 🟢 OPEN |
+| [#7827](https://github.com/openclaw/openclaw/issues/7827) | Default Safety Posture: Sandbox & Session Isolation | 請求預設啟用 sandbox | 🔒 CLOSED |
+| [#12405](https://github.com/openclaw/openclaw/issues/12405) | Pluggable sandbox backends & per-agent exec routing | 支援 VM/OrbStack 等非 Docker 後端 | 🟢 OPEN |
+| [#13543](https://github.com/openclaw/openclaw/issues/13543) | Tool-level sandbox mode for selective isolation | 請求 per-tool sandbox 設定 | 🟢 OPEN |
 
 ---
 
