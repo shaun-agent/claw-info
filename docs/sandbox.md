@@ -286,6 +286,7 @@ read: /workspace/data/input.txt
 | Issue | 標題 | 說明 | 狀態 |
 |-------|------|------|------|
 | [#8566](https://github.com/openclaw/openclaw/issues/8566) | Sandbox browser runs Chromium as root with --no-sandbox | CVSS 9.6 - Chromium 以 root 執行且停用 sandbox | 🔒 CLOSED (stale) |
+| [#50655](https://github.com/openclaw/openclaw/issues/50655) | Agent crashes (exit code 255) when fetching GitHub profile page inside OpenShell sandbox | OpenShell sandbox 內 web_fetch GitHub 頁面導致 agent crash | 🟢 OPEN |
 
 ### 🟠 Bugs
 
@@ -303,6 +304,7 @@ read: /workspace/data/input.txt
 | [#7827](https://github.com/openclaw/openclaw/issues/7827) | Default Safety Posture: Sandbox & Session Isolation | 請求預設啟用 sandbox | 🔒 CLOSED |
 | [#12405](https://github.com/openclaw/openclaw/issues/12405) | Pluggable sandbox backends & per-agent exec routing | 支援 VM/OrbStack 等非 Docker 後端 | 🟢 OPEN |
 | [#13543](https://github.com/openclaw/openclaw/issues/13543) | Tool-level sandbox mode for selective isolation | 請求 per-tool sandbox 設定 | 🟢 OPEN |
+| [#52662](https://github.com/openclaw/openclaw/issues/52662) | Browser sandbox should support non-Docker backends | 要求 browser sandbox 支援外部 CDP/noVNC endpoint（與 pluggable backend 方向一致） | 🟢 OPEN |
 
 ---
 
