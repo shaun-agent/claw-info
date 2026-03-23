@@ -1,0 +1,130 @@
+# ACPX Harness
+
+## ACPX Harness 是什麼
+
+ACPX（ACP eXternal）Harness 是 OpenClaw ACP（Agent Communication Protocol）的**外部執行後端橋接層**。它讓 OpenClaw gateway 能夠將 agent 任務**委派給外部 AI CLI 工具**執行，而非使用 OpenClaw 自身的內建 LLM runtime。
+
+---
+
+## 它解決了什麼痛點
+
+### 問題背景
+
+OpenClaw 本身是一個 AI agent 平台，內建自己的 LLM runtime（呼叫 OpenAI、Anthropic 等 API）。但社群有強烈需求：
+
+| 痛點 | 說明 |
+|------|------|
+| **工具生態割裂** | Claude Code、Codex CLI、Gemini CLI 各有獨立的工具呼叫能力、MCP 整合、permission model，無法在 OpenClaw 內直接使用 |
+| **認證管理複雜** | 各 CLI 有自己的 OAuth / API key 管理，重複在 OpenClaw 實作成本高且易出錯 |
+| **session 狀態不一致** | 外部 CLI 維護自己的對話歷史與 context window，強行整合會造成狀態不同步 |
+| **能力上限不同** | Claude Code 有 computer use、file edit 等原生能力，OpenClaw 內建 runtime 無法完整複製 |
+
+### ACPX 的解法
+
+> 不重造輪子，直接橋接外部 CLI。
+
+ACPX 透過標準化的 JSON-RPC over stdin/stdout 協議，讓 OpenClaw 像「指揮官」一樣派發任務給外部 CLI，由外部 CLI 負責實際執行與 AI 呼叫，結果再回傳至 OpenClaw session。
+
+---
+
+## 為何不可或缺
+
+1. **多模型協作**：同一個 OpenClaw workflow 可同時調度 Claude、Codex、Gemini 等不同模型，各司其職
+2. **保留原生能力**：外部 CLI 的 tool use、MCP、permission model 完整保留，不受 OpenClaw 限制
+3. **認證解耦**：OpenClaw 不需持有各 AI 廠商的 API key，由外部 CLI 自行管理
+4. **靜默 fallback 風險**：若 acpx 缺失，OpenClaw 會靜默降級至內建 runtime——使用者以為在用 Claude，實際上是 OpenClaw 自己在回答（這是 v2026.3.22 打包災難最嚴重的影響）
+
+---
+
+## 運作原理
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                  ACP Harness 運作原理                           │
+└─────────────────────────────────────────────────────────────────┘
+
+  使用者發送訊息
+        │
+        ▼
+┌───────────────────────────────────────────────────────────────┐
+│                    OpenClaw Gateway                           │
+│                                                               │
+│   session 設定 runtime: "acp", agent: "claude"               │
+│                                                               │
+│   ┌─────────────────────────────────────────────────────┐    │
+│   │                  ACPX Harness                        │    │
+│   │                                                      │    │
+│   │  1. spawn  claude --experimental-acp                 │    │
+│   │  2. 透過 stdin 送出 JSON-RPC 請求                    │    │
+│   │  3. 從 stdout 讀取 JSON-RPC 回應                     │    │
+│   │  4. 串流 token 回傳至 OpenClaw session               │    │
+│   └──────────────────────┬───────────────────────────────┘    │
+│                          │ stdin/stdout pipe                   │
+└──────────────────────────│────────────────────────────────────┘
+                           │
+                           ▼
+                  ┌─────────────────┐
+                  │  外部 CLI 進程  │
+                  │                 │
+                  │  e.g. claude    │
+                  │       codex     │
+                  │       gemini    │
+                  │       kiro      │
+                  └────────┬────────┘
+                           │
+                           ▼
+                    實際 AI 模型 API
+                  (Anthropic / OpenAI
+                   / Google / Amazon)
+```
+
+支援的內建 harness：
+
+| Agent ID | 對應外部 CLI | 廠商 |
+|----------|-------------|------|
+| `claude` | Claude Code CLI | Anthropic |
+| `codex` | OpenAI Codex CLI | OpenAI |
+| `gemini` | Gemini CLI | Google |
+| `kiro` | Kiro CLI | Amazon |
+| `cursor` | Cursor CLI | Cursor |
+
+---
+
+## 演進史
+
+**2026-02-27 — 誕生**
+- PR [#23580](https://github.com/openclaw/openclaw/pull/23580)：ACP 執行緒代理成為一等公民，`acpx backend bridging` 首次引入
+
+**2026-03-01 — 初步穩定**
+- PR [#30036](https://github.com/openclaw/openclaw/pull/30036)：pin ACPX 至 `0.1.15`，加入 command/version probing
+
+**2026-03-02~04 — 早期 bug 爆發**
+- [#31686](https://github.com/openclaw/openclaw/issues/31686)：Claude ACP session 失敗
+- [#32967](https://github.com/openclaw/openclaw/issues/32967)：`@openclaw/acpx` npm 404，scoped package 未發布
+- [#33514](https://github.com/openclaw/openclaw/issues/33514)：Windows `resolveWindowsSpawnProgramCandidate` 不存在
+- [#33843](https://github.com/openclaw/openclaw/issues/33843)：`sessions_spawn` CLI 語法錯誤
+
+**2026-03-08~13 — 快速迭代修復**
+- 修 Gemini `--experimental-acp` flag
+- 修 Codex OAuth auth / env key 洩漏
+- 修 JSON-RPC done/error 事件解析
+- 版本 pin 從 `0.1.15` → `0.1.16` → `0.2.0`
+
+**2026-03-15 — 擴展支援**
+- PR [#47575](https://github.com/openclaw/openclaw/pull/47575)：新增 **Kiro CLI** 為內建 ACP agent
+- PR [#48174](https://github.com/openclaw/openclaw/pull/48174)：新增 **Cursor CLI** 為內建 ACP agent
+
+**2026-03-17~21 — 持續修復**
+- Codex `--cd` flag、process group orphan、permission flags 轉發
+- 版本 pin 升至 `0.3.0`
+
+**2026-03-22~23 — v2026.3.22 打包災難**
+- `dist/extensions/acpx/` 未打包進 npm
+- 所有外部 harness（claude/codex/gemini/kiro/cursor）靜默 fallback 至內建 runtime
+- PR [#52846](https://github.com/openclaw/openclaw/pull/52846)：緊急修復，保留 whatsapp 與 acpx bundled
+
+---
+
+## 核心問題模式
+
+版本 pin 頻繁變動（`0.1.15` → `0.1.16` → `0.2.0` → `0.3.0`）、npm 打包流程不穩定、Windows 支援持續有問題，是整個 acpx 生命週期的三大痛點。
