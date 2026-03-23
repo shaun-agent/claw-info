@@ -363,3 +363,102 @@ docker tag debian:bookworm-slim openclaw-sandbox:bookworm-slim
 - [Multi-agent Sandbox Tools](https://docs.openclaw.ai/multi-agent-sandbox-tools)
 - [Security Docs](https://docs.openclaw.ai/cli/security)
 - [Original Gist](https://gist.github.com/pahud/d937b72dcbd404b07115be681de1d46e)
+
+---
+
+## Pluggable Sandbox Backends（v2026.3.22）
+
+> **背景：** 社群長期反映 Docker sandbox 對 coding agent 過於嚴格，且無法適應 VM、OrbStack、雲端等不同部署環境（見 issue [#12405](https://github.com/openclaw/openclaw/issues/12405)）。v2026.3.22 將 sandbox 重構為可插拔架構。
+
+### 架構演進
+
+```
+══════════════════════════════════════════════════════════════
+  舊架構（v2026.1.8 ~ v2026.2.15）：只有 Docker
+══════════════════════════════════════════════════════════════
+
+  ┌─────────┐     ┌──────────────────┐     ┌───────────────┐
+  │  Agent  │────▶│  Sandbox 判斷    │────▶│    Docker     │
+  └─────────┘     │  off/non-main/all│     │   Container   │
+                  └──────────────────┘     └───────────────┘
+                         │ mode=off
+                         ▼
+                  ┌──────────────┐
+                  │  Host 直接執行│
+                  └──────────────┘
+
+══════════════════════════════════════════════════════════════
+  新架構（v2026.3.22）：Pluggable Backends
+══════════════════════════════════════════════════════════════
+
+  ┌─────────┐     ┌──────────────────┐     ┌──────────────────────┐
+  │  Agent  │────▶│  Sandbox 判斷    │────▶│   Backend 路由       │
+  └─────────┘     │  off/non-main/all│     │  （可插拔介面）       │
+                  └──────────────────┘     └──────┬───────────────┘
+                                                  │
+                          ┌───────────────────────┼───────────────┐
+                          ▼                       ▼               ▼
+                  ┌──────────────┐     ┌────────────────┐  ┌──────────┐
+                  │    Docker    │     │   OpenShell    │  │   SSH    │
+                  │   Backend    │     │   Backend      │  │  Backend │
+                  └──────────────┘     └───────┬────────┘  └──────────┘
+                                               │
+                                    ┌──────────┴──────────┐
+                                    ▼                     ▼
+                             ┌────────────┐       ┌────────────┐
+                             │   mirror   │       │   remote   │
+                             │   模式     │       │   模式     │
+                             └────────────┘       └────────────┘
+```
+
+### Backend 介面
+
+所有 backend 實作同一介面，`sandbox list/recreate/prune` 等指令因此變成 backend-aware：
+
+```
+┌──────────────────────────────────┐
+│   Sandbox Backend Interface      │
+├──────────────────────────────────┤
+│  create()                        │
+│  exec(cmd)                       │
+│  destroy()                       │
+│  getStatus()                     │
+└────────────┬─────────────────────┘
+             │
+   ┌─────────┼─────────┐
+   ▼         ▼         ▼
+Docker   OpenShell    SSH
+```
+
+### OpenShell Backend 兩種 Workspace 模式
+
+| 模式 | 說明 | 適合場景 |
+|------|------|----------|
+| `mirror` | 本地 workspace 同步鏡像至 OpenShell | 本地開發，需要隔離但保留本地檔案 |
+| `remote` | workspace 完全存在於遠端 | 雲端開發，不需要本地副本 |
+
+```
+  mirror 模式                          remote 模式
+  ┌──────────┐  同步  ┌──────────┐    ┌──────────┐      ┌──────────┐
+  │  本地    │──────▶│OpenShell │    │  本地    │      │OpenShell │
+  │ workspace│◀──────│  副本    │    │ (無資料) │      │ workspace│
+  └──────────┘  回寫  └──────────┘    └──────────┘      └──────────┘
+                                              指令直接在遠端執行
+```
+
+### sandbox 指令 backend-aware 示意
+
+```
+openclaw sandbox list
+  ├── Docker containers:
+  │     openclaw-sbx-session-abc123   running
+  ├── OpenShell instances:
+  │     openclaw-os-agent-main        running
+  └── SSH sessions:
+        openclaw-ssh-dev-server       running
+
+openclaw sandbox recreate --all
+  ├── Docker  → docker rm + docker run
+  ├── OpenShell → 銷毀 + 重建 workspace
+  └── SSH     → 斷線 + 重連 + 重新初始化
+```
