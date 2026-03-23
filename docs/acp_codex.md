@@ -242,3 +242,4 @@ $ACPX codex sessions new --name my-codex-tg
 
 - [OpenClaw × ACP × Kiro 整合指南](./acp_kiro.md)
 - [OpenClaw × ACP × Gemini 整合指南](./acp_gemini.md)
+- [ACPX Harness 架構與演進史](../acpx-harness.md)

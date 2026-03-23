@@ -291,3 +291,7 @@ du -sh ~/Downloads/* 2>/dev/null | sort -h | tail
 - [ ] message tool 是否要內建敏感資料掃描/自動 redaction？
 - [ ] browser 的 extension relay 模式是否要強制使用者手動 attach + 每次操作顯示目標 tab？
 - [ ] nodes 類工具是否需要「每次 session 重授權」的 UX？
+
+## 參考資料
+
+- [ACPX Harness 架構與演進史](../acpx-harness.md)

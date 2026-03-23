@@ -464,3 +464,7 @@ openclaw sandbox recreate --all
   ├── OpenShell → 銷毀 + 重建 workspace
   └── SSH     → 斷線 + 重連 + 重新初始化
 ```
+
+## 參考資料
+
+- [ACPX Harness 架構與演進史](./acpx-harness.md)
