@@ -106,13 +106,13 @@ threshold_for() {
 }
 
 # 使用 yq 解析 frontmatter（需安裝 yq v4+）
-# 若無 yq，fallback 至 awk
+# 若無 yq，fallback 至 awk（僅讀 --- 區塊內容，避免誤判正文）
 parse_field() {
   local file="$1" field="$2"
   if command -v yq >/dev/null 2>&1; then
     yq e ".${field}" "$file" 2>/dev/null | grep -v '^null$' || true
   else
-    awk -F': ' "/^${field}:/{print \$2; exit}" "$file" | tr -d '\r'
+    awk "/^---/{f=!f; next} f && /^${field}:/{print \$2; exit}" "$file" | tr -d '\r'
   fi
 }
 
@@ -131,7 +131,14 @@ while IFS= read -r -d '' f; do
     if [ "$existing" -eq 0 ]; then
       gh issue create \
         --title "$title" \
-        --body "上次驗證：$last（${age} 天前）。請於 7 天內更新 \`last_validated\` 並送 PR。" \
+        --body "上次驗證：$last（${age} 天前）。
+
+請於 7 天內完成以下步驟並送 PR：
+- [ ] 對照 source code 確認內容仍正確
+- [ ] 若有過時內容，一併修正
+- [ ] 更新 \`last_validated\` 為今日日期
+- [ ] 更新 \`freshness: ok\`（驗證完成後）
+- [ ] 若 ownership 異動，更新 \`validated_by\`" \
         --assignee "$owner" \
         --label doc-review
     fi
@@ -146,7 +153,7 @@ done < <(find docs usecases -type f -name "*.md" -print0 2>/dev/null)
 Body：
   - 文件路徑
   - 上次驗證：YYYY-MM-DD（N 天前）
-  - 請於 7 天內更新 last_validated 並送 PR
+  - 驗證 checklist（確認內容、修正過時處、更新 last_validated + freshness）
 Assignee：validated_by 欄位的 GitHub username
 Label：doc-review
 ```
@@ -155,6 +162,7 @@ Label：doc-review
 
 - 超過 deadline（+7 天）未處理：文件標記為 `freshness: stale`
 - Agent 讀取 stale 文件時，自動附加警告：`⚠️ 此文件已超過 review 週期，內容可能過時`
+  > ⚠️ **Future work**：此警告機制尚未實作，待後續 PR 追蹤。
 - 其他 agent 或貢獻者可接手更新
 - **連續 2 次 review cycle（約 30 天）未回應**：原作者從信任名單中移除，文件開放 `help-wanted` 認領
 
